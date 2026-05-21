@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 
 let loadingWindow: BrowserWindow | null = null;
@@ -9,7 +9,7 @@ function createLoadingWindow() {
     height: 480,
     frame: false,          
     transparent: true,    
-    resizable: false,
+    resizable: true,
     show: false,          
     webPreferences: {
       nodeIntegration: false,
@@ -32,6 +32,19 @@ function createLoadingWindow() {
   });
 }
 
+// IPC Handlers for Custom Window Controls
+ipcMain.on('window-minimize', () => {
+  if (loadingWindow) {
+    loadingWindow.minimize();
+  }
+});
+
+ipcMain.on('window-close', () => {
+  if (loadingWindow) {
+    loadingWindow.close();
+  }
+});
+
 app.whenReady().then(() => {
   createLoadingWindow();
 
@@ -47,3 +60,4 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+

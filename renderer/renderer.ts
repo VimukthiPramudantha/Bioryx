@@ -1,6 +1,25 @@
 /* Renderer Process script in TypeScript */
 
 document.addEventListener('DOMContentLoaded', () => {
+  const btnMinimize = document.getElementById('btn-minimize');
+  const btnClose = document.getElementById('btn-close');
+
+  if (btnMinimize) {
+    btnMinimize.addEventListener('click', () => {
+      if ((window as any).electronAPI) {
+        (window as any).electronAPI.minimize();
+      }
+    });
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener('click', () => {
+      if ((window as any).electronAPI) {
+        (window as any).electronAPI.close();
+      }
+    });
+  }
+
   const statusText = document.getElementById('status-text');
   if (!statusText) return;
 

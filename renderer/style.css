@@ -91,6 +91,7 @@ body {
   text-align: center;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   animation: card-appear 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  -webkit-app-region: drag;
 }
 
 @keyframes card-appear {
@@ -220,3 +221,60 @@ body {
   transition: all 0.3s ease;
   min-height: 18px;
 }
+
+/* Custom Window Controls */
+.window-controls {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 100;
+}
+
+.control-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.control-btn.close:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+}
+
+.control-btn svg {
+  transition: transform 0.2s ease;
+}
+
+.control-btn:hover svg {
+  transform: scale(1.15);
+}
+
+/* Drag Exclusions (Ensure buttons, inputs, and toasts remain interactive) */
+.window-controls,
+.control-btn,
+.progress-container,
+.logo-wrapper,
+.gooey-toast-container,
+.gooey-toast {
+  -webkit-app-region: no-drag;
+}
+
