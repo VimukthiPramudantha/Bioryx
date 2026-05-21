@@ -2,6 +2,14 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
+import * as dns from 'dns';
+
+// Force reliable DNS servers (Google DNS) to ensure MongoDB SRV records resolve correctly
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {
+  console.warn("Could not set custom DNS servers:", e);
+}
 
 dotenv.config();
 
