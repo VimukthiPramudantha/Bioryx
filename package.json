@@ -5,12 +5,20 @@
   "license": "ISC",
   "author": "",
   "type": "commonjs",
-  "main": "main.js",
+  "main": "dist/electron/main.js",
   "scripts": {
-    "start": "electron .",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "start": "tsc && electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
-    "electron": "^42.2.0"
+    "@types/node": "^25.9.1",
+    "electron": "^42.2.0",
+    "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.2.0"
   }
 }
