@@ -2,8 +2,6 @@
 
 .gooey-toast-container {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -12,11 +10,57 @@
   pointer-events: none;
 }
 
+/* Positioning rules */
+.gooey-toast-container.top-right {
+  top: 50px;
+  right: 24px;
+  bottom: auto;
+  left: auto;
+  align-items: flex-end;
+}
+.gooey-toast-container.top-left {
+  top: 50px;
+  left: 24px;
+  bottom: auto;
+  right: auto;
+  align-items: flex-start;
+}
+.gooey-toast-container.bottom-right {
+  bottom: 24px;
+  right: 24px;
+  top: auto;
+  left: auto;
+  align-items: flex-end;
+}
+.gooey-toast-container.bottom-left {
+  bottom: 24px;
+  left: 24px;
+  top: auto;
+  right: auto;
+  align-items: flex-start;
+}
+.gooey-toast-container.top-center {
+  top: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: auto;
+  right: auto;
+  align-items: center;
+}
+.gooey-toast-container.bottom-center {
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: auto;
+  right: auto;
+  align-items: center;
+}
+
 .gooey-toast {
   pointer-events: auto;
-  min-width: 300px;
-  max-width: 380px;
-  background: rgba(20, 24, 35, 0.85);
+  min-width: 320px;
+  max-width: 400px;
+  background: rgba(18, 22, 33, 0.9);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -24,63 +68,114 @@
   border-radius: 16px;
   color: #f1f3f9;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  
-  transform-origin: bottom right;
-  animation: gooey-slide-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.gooey-toast.dismissing {
-  animation: gooey-slide-out 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+/* Slide in/out animations based on position */
+.gooey-toast.top-right, .gooey-toast.bottom-right {
+  animation: gooey-slide-in-right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: center right;
+}
+.gooey-toast.top-left, .gooey-toast.bottom-left {
+  animation: gooey-slide-in-left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: center left;
+}
+.gooey-toast.top-center {
+  animation: gooey-slide-in-top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: top center;
+}
+.gooey-toast.bottom-center {
+  animation: gooey-slide-in-bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: bottom center;
 }
 
-@keyframes gooey-slide-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.6) translate3d(0, 100px, 0);
-  }
-  45% {
-    transform: scale(1.08) translate3d(0, -10px, 0);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translate3d(0, 0, 0);
-  }
+.gooey-toast.dismissing.top-right, .gooey-toast.dismissing.bottom-right {
+  animation: gooey-slide-out-right 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.gooey-toast.dismissing.top-left, .gooey-toast.dismissing.bottom-left {
+  animation: gooey-slide-out-left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.gooey-toast.dismissing.top-center {
+  animation: gooey-slide-out-top 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.gooey-toast.dismissing.bottom-center {
+  animation: gooey-slide-out-bottom 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-@keyframes gooey-slide-out {
-  0% {
-    opacity: 1;
-    transform: scale(1) translate3d(0, 0, 0);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.5) translate3d(0, 80px, 0);
-  }
+/* Keyframes */
+@keyframes gooey-slide-in-right {
+  0% { opacity: 0; transform: scale(0.6) translate3d(80px, 0, 0); }
+  100% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes gooey-slide-out-right {
+  0% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: scale(0.5) translate3d(120px, 0, 0); }
 }
 
-/* Toast sub-elements */
+@keyframes gooey-slide-in-left {
+  0% { opacity: 0; transform: scale(0.6) translate3d(-80px, 0, 0); }
+  100% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes gooey-slide-out-left {
+  0% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: scale(0.5) translate3d(-120px, 0, 0); }
+}
+
+@keyframes gooey-slide-in-top {
+  0% { opacity: 0; transform: scale(0.6) translate3d(0, -80px, 0); }
+  100% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes gooey-slide-out-top {
+  0% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: scale(0.5) translate3d(0, -120px, 0); }
+}
+
+@keyframes gooey-slide-in-bottom {
+  0% { opacity: 0; transform: scale(0.6) translate3d(0, 80px, 0); }
+  100% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes gooey-slide-out-bottom {
+  0% { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+  100% { opacity: 0; transform: scale(0.5) translate3d(0, 120px, 0); }
+}
+
+/* Toast Structure styling */
 .gooey-toast .toast-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: 50%;
+  border-radius: 8px;
   flex-shrink: 0;
-  font-size: 14px;
+  margin-top: 2px;
 }
 
-.gooey-toast .toast-content {
+.gooey-toast .toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   flex-grow: 1;
+  text-align: left;
+}
+
+.gooey-toast .toast-title {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+  letter-spacing: 0.1px;
+}
+
+.gooey-toast .toast-description {
+  font-size: 12px;
+  font-weight: 400;
   line-height: 1.4;
-  letter-spacing: 0.2px;
+  color: rgba(241, 243, 249, 0.65);
 }
 
 .gooey-toast .toast-close {
@@ -95,6 +190,8 @@
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .gooey-toast .toast-close:hover {

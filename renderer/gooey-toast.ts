@@ -1,12 +1,14 @@
 /* Custom Gooey Toast Manager in Vanilla TypeScript */
 
 interface ToastOptions {
+  description?: string;
   duration?: number;
   closeable?: boolean;
 }
 
 class GooeyToastManager {
   private container: HTMLDivElement | null = null;
+  private position: string = 'top-right';
 
   constructor() {
     if (document.readyState === 'loading') {
@@ -24,6 +26,7 @@ class GooeyToastManager {
   private injectSVGFilter() {
     if (document.getElementById('gooey-filter-svg')) return;
 
+    // SVG filter for the organic morphing gooey blob animations
     const svgHtml = `
       <svg id="gooey-filter-svg" style="visibility: hidden; position: absolute; width: 0; height: 0;" xmlns="http://www.w3.org/2000/svg" version="1.1">
         <defs>
@@ -42,23 +45,28 @@ class GooeyToastManager {
   }
 
   private createContainer() {
+    const toasterEl = document.querySelector('GooeyToaster');
+    if (toasterEl) {
+      this.position = toasterEl.getAttribute('position') || 'top-right';
+    }
+
     this.container = document.querySelector('.gooey-toast-container');
     if (!this.container) {
       this.container = document.createElement('div');
-      this.container.className = 'gooey-toast-container';
+      this.container.className = `gooey-toast-container ${this.position}`;
       document.body.appendChild(this.container);
     }
   }
 
-  public show(message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', options: ToastOptions = {}) {
+  public show(title: string, options: ToastOptions = {}, type: 'success' | 'error' | 'warning' | 'info' = 'info') {
     if (!this.container) {
       this.createContainer();
     }
 
-    const { duration = 4000, closeable = true } = options;
+    const { description, duration = 4000, closeable = true } = options;
 
     const toast = document.createElement('div');
-    toast.className = `gooey-toast ${type}`;
+    toast.className = `gooey-toast ${type} ${this.position}`;
 
     let icon = '•';
     if (type === 'success') {
@@ -73,13 +81,16 @@ class GooeyToastManager {
 
     toast.innerHTML = `
       <div class="toast-icon">${icon}</div>
-      <div class="toast-content">${message}</div>
+      <div class="toast-body">
+        <div class="toast-title">${title}</div>
+        ${description ? `<div class="toast-description">${description}</div>` : ''}
+      </div>
     `;
 
     if (closeable) {
       const closeBtn = document.createElement('button');
       closeBtn.className = 'toast-close';
-      closeBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+      closeBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
       closeBtn.onclick = () => this.dismiss(toast);
       toast.appendChild(closeBtn);
     }
@@ -95,20 +106,20 @@ class GooeyToastManager {
     return toast;
   }
 
-  public success(message: string, options?: ToastOptions) {
-    return this.show(message, 'success', options);
+  public success(title: string, options?: ToastOptions) {
+    return this.show(title, options, 'success');
   }
 
-  public error(message: string, options?: ToastOptions) {
-    return this.show(message, 'error', options);
+  public error(title: string, options?: ToastOptions) {
+    return this.show(title, options, 'error');
   }
 
-  public warning(message: string, options?: ToastOptions) {
-    return this.show(message, 'warning', options);
+  public warning(title: string, options?: ToastOptions) {
+    return this.show(title, options, 'warning');
   }
 
-  public info(message: string, options?: ToastOptions) {
-    return this.show(message, 'info', options);
+  public info(title: string, options?: ToastOptions) {
+    return this.show(title, options, 'info');
   }
 
   private dismiss(toast: HTMLDivElement) {
@@ -116,7 +127,7 @@ class GooeyToastManager {
     toast.classList.add('dismissing');
     
     toast.addEventListener('animationend', (e) => {
-      if (e.animationName === 'gooey-slide-out') {
+      if (e.animationName.includes('gooey-slide-out')) {
         toast.remove();
       }
     });
