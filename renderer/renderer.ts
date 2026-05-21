@@ -2,12 +2,21 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   const btnMinimize = document.getElementById('btn-minimize');
+  const btnMaximize = document.getElementById('btn-maximize');
   const btnClose = document.getElementById('btn-close');
 
   if (btnMinimize) {
     btnMinimize.addEventListener('click', () => {
       if ((window as any).electronAPI) {
         (window as any).electronAPI.minimize();
+      }
+    });
+  }
+
+  if (btnMaximize) {
+    btnMaximize.addEventListener('click', () => {
+      if ((window as any).electronAPI) {
+        (window as any).electronAPI.maximize();
       }
     });
   }

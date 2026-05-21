@@ -39,6 +39,16 @@ ipcMain.on('window-minimize', () => {
   }
 });
 
+ipcMain.on('window-maximize', () => {
+  if (loadingWindow) {
+    if (loadingWindow.isMaximized()) {
+      loadingWindow.unmaximize();
+    } else {
+      loadingWindow.maximize();
+    }
+  }
+});
+
 ipcMain.on('window-close', () => {
   if (loadingWindow) {
     loadingWindow.close();
