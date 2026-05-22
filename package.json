@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
-    "mongodb": "^7.2.0"
+    "mongodb": "^7.2.0",
+    "zkteco-js": "^1.7.1"
   }
 }

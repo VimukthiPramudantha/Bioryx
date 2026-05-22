@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 import * as dns from 'dns';
+import { zktecoService } from '../backend/device/zktecoService';
 
 // Force reliable DNS servers (Google DNS) to ensure MongoDB SRV records resolve correctly
 try {
@@ -106,6 +107,10 @@ ipcMain.on('window-close', () => {
   if (loadingWindow) {
     loadingWindow.close();
   }
+});
+
+ipcMain.handle('zkteco-test-connection', async (_event, ip: string, port: number) => {
+  return await zktecoService.testConnection(ip, port);
 });
 
 app.whenReady().then(() => {

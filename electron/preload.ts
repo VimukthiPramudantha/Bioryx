@@ -6,7 +6,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   close: () => ipcRenderer.send('window-close'),
   onDbStatus: (callback: (event: any, data: any) => void) => {
     ipcRenderer.on('db-status', callback);
-  }
+  },
+  testZkTecoConnection: (ip: string, port: number) => ipcRenderer.invoke('zkteco-test-connection', ip, port)
 });
 
 window.addEventListener('DOMContentLoaded', () => {

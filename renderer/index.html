@@ -52,11 +52,16 @@
       <h1 class="app-title">BIORYX</h1>
       <p class="app-subtitle">Attendance Synchronization System</p>
       
-      <div class="progress-container">
+      <div class="progress-container" id="loading-progress">
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
         <div class="status-message" id="status-text">Initializing synchronization engine...</div>
+      </div>
+
+      <div class="zkteco-test-container">
+        <input type="text" id="zk-ip-input" placeholder="Device IP (e.g. 192.168.1.201)" class="glass-input" value="192.168.1.201" />
+        <button id="btn-test-zk" class="glass-btn">Test Connection</button>
       </div>
     </div>
   </div>
