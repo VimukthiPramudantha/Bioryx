@@ -112,6 +112,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     deviceManagerEl = dm.getElement();
   }
 
+  // ── Instantiate Attendance Module ─────────────────────────────────────────
+  let attendanceEl: HTMLElement | null = null;
+  if ((window as any).BioryxAttendance) {
+    const att = new (window as any).BioryxAttendance();
+    attendanceEl = att.getElement();
+  }
+
   // ── Window controls ───────────────────────────────────────────────────────
   titleBar.querySelector('#btn-minimize')?.addEventListener('click', () =>
     (window as any).electronAPI?.minimize());
@@ -264,46 +271,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── 3. Attendance ─────────────────────────────────────────────────────────
   function renderAttendance() {
-    const wrap = createElement('div', { className: 'table-container' },
-      createElement('div', { className: 'table-header-row' },
-        createElement('div', { className: 'table-title-group' },
-          createElement('h3', {}, 'Daily Attendance Logs'),
-          createElement('p', {}, 'Real-time record of check-in and check-out logs')
+    if (attendanceEl) {
+      contentBody.appendChild(attendanceEl);
+    } else {
+      contentBody.appendChild(
+        createElement('div', { className: 'config-card' },
+          createElement('p', {}, 'Attendance component failed to load.')
         )
-      ),
-      (() => {
-        const t = createElement('table', { className: 'data-table' });
-        t.appendChild(createElement('thead', {},
-          createElement('tr', {},
-            createElement('th', {}, 'Employee'),     createElement('th', {}, 'Date'),
-            createElement('th', {}, 'Clock In'),     createElement('th', {}, 'Clock Out'),
-            createElement('th', {}, 'Status')
-          )
-        ));
-        const tb = document.createElement('tbody');
-        tb.id = 'attendance-logs-tbody';
-
-        // Prepend real-time live punches
-        livePunches.forEach(p => {
-          tb.appendChild(createTableRow(
-            `User #${p.userId}`,
-            p.timestamp.toLocaleDateString(),
-            p.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-            p.mongoSynced ? '<span class="badge badge-success">Synced</span>' : '<span class="badge badge-warning">Local Cache</span>',
-            '<span class="badge badge-success">On Time</span>'
-          ));
-        });
-
-        // Add static placeholders
-        tb.appendChild(createTableRow('John Doe (EMP001)',    'May 23, 2026', '08:55 AM', '05:05 PM', '<span class="badge badge-success">On Time</span>'));
-        tb.appendChild(createTableRow('Jane Smith (EMP002)',  'May 23, 2026', '09:12 AM', '05:00 PM', '<span class="badge badge-warning">Late</span>'));
-        tb.appendChild(createTableRow('Alice Johnson (EMP003)','May 23, 2026','08:50 AM', '05:15 PM', '<span class="badge badge-success">On Time</span>'));
-        tb.appendChild(createTableRow('Bob Brown (EMP004)',   'May 23, 2026', '--',        '--',       '<span class="badge badge-danger">Absent</span>'));
-        t.appendChild(tb);
-        return t;
-      })()
-    );
-    contentBody.appendChild(wrap);
+      );
+    }
   }
 
   // ── 4. Sync Manager ───────────────────────────────────────────────────────

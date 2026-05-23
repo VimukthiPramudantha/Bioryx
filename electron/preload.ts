@@ -34,6 +34,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   // State checks
+  getAttendanceLogsArchive: () => ipcRenderer.invoke('get-attendance-logs-archive'),
   getConnectionState: () => ipcRenderer.invoke('get-connection-state'),
 });
 

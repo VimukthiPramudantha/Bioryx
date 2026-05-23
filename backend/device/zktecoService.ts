@@ -77,6 +77,20 @@ export class ZKTecoService {
     this.deviceIp = '';
   }
 
+  async getAttendances(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    if (!this.zk) {
+      return { success: false, error: 'Device not connected' };
+    }
+    try {
+      console.log('Fetching attendance records from ZKTeco...');
+      const res = await this.zk.getAttendances();
+      return { success: true, data: res.data };
+    } catch (err: any) {
+      console.error('Failed to get attendance records from device:', err);
+      return { success: false, error: err.message || 'Failed to get records' };
+    }
+  }
+
   async testConnection(ip: string, port: number = 4370): Promise<{ success: boolean; info?: any; error?: string }> {
     let tempZk: any = null;
     try {
