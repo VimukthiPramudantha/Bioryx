@@ -37,6 +37,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAttendanceLogsArchive: () => ipcRenderer.invoke('get-attendance-logs-archive'),
   getConnectionState: () => ipcRenderer.invoke('get-connection-state'),
   getDeviceUsers: () => ipcRenderer.invoke('get-device-users'),
+  syncDeviceDatabase: () => ipcRenderer.invoke('sync-device-database'),
 });
 
 window.addEventListener('DOMContentLoaded', () => {

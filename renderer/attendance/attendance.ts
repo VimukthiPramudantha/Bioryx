@@ -23,11 +23,13 @@ class BioryxAttendance {
     empFilter: HTMLInputElement | null;
     tableBody: HTMLElement | null;
     refreshBtn: HTMLButtonElement | null;
+    syncBtn: HTMLButtonElement | null;
   } = {
     dateFilter: null,
     empFilter: null,
     tableBody: null,
     refreshBtn: null,
+    syncBtn: null,
   };
 
   constructor() {
@@ -35,6 +37,7 @@ class BioryxAttendance {
     this.bindEvents();
     this.loadLogs();
     this.setupLivePunchListener();
+    this.setupNetworkStateListener();
   }
 
   public getElement(): HTMLElement {
@@ -76,7 +79,7 @@ class BioryxAttendance {
           </div>
         </div>
 
-        <div class="dm-actions" style="margin-top: 16px; justify-content: flex-end;">
+        <div class="dm-actions" style="margin-top: 16px; justify-content: flex-end; gap: 8px;">
           <button id="att-refresh-btn" class="dm-btn dm-btn-secondary">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
               <polyline points="23 4 23 10 17 10"></polyline>
@@ -84,6 +87,12 @@ class BioryxAttendance {
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
             </svg>
             Refresh Records
+          </button>
+          <button id="att-sync-btn" class="dm-btn dm-btn-primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
+            </svg>
+            Sync Now
           </button>
         </div>
       </div>
@@ -126,6 +135,7 @@ class BioryxAttendance {
     this.refs.empFilter  = this.container.querySelector('#att-emp');
     this.refs.tableBody  = this.container.querySelector('#att-table-body');
     this.refs.refreshBtn = this.container.querySelector('#att-refresh-btn');
+    this.refs.syncBtn    = this.container.querySelector('#att-sync-btn');
 
     // Trigger filters on input change
     this.refs.dateFilter?.addEventListener('change', () => this.processAndRenderLogs());
@@ -135,6 +145,10 @@ class BioryxAttendance {
       const toast = (window as any).gooeyToast;
       toast?.info('Refreshing', { description: 'Fetching historical device logs...' });
       await this.loadLogs();
+    });
+
+    this.refs.syncBtn?.addEventListener('click', async () => {
+      await this.triggerDeviceDbSync(true);
     });
   }
 
@@ -329,6 +343,54 @@ class BioryxAttendance {
         <td>${row.statusBadge}</td>
       `;
       this.refs.tableBody!.appendChild(tr);
+    });
+  }
+
+  private async triggerDeviceDbSync(isManual: boolean): Promise<void> {
+    const api = (window as any).electronAPI;
+    const toast = (window as any).gooeyToast;
+    
+    if (!api?.syncDeviceDatabase) {
+      if (isManual) {
+        toast?.error('Sync Failed', { description: 'Sync API is not available.' });
+      }
+      return;
+    }
+
+    try {
+      if (isManual) {
+        toast?.info('Synchronizing', { description: 'Syncing device and database...' });
+      } else {
+        toast?.info('Auto Syncing', { description: 'Internet connection is back. Syncing offline logs...' });
+      }
+
+      const res = await api.syncDeviceDatabase();
+      if (res.success) {
+        if (isManual) {
+          toast?.success('Sync Complete', {
+            description: `Successfully synchronized. Device: ${res.deviceStatus}, DB: ${res.isDbConnected ? 'Connected' : 'Disconnected'}`
+          });
+        } else {
+          toast?.success('Auto Sync Complete', { description: 'Offline logs successfully flushed to database.' });
+        }
+        await this.loadLogs();
+      } else {
+        if (isManual) {
+          toast?.error('Sync Failed', { description: res.error || 'Unknown sync error.' });
+        }
+      }
+    } catch (err: any) {
+      console.error('Device DB Sync error:', err);
+      if (isManual) {
+        toast?.error('Sync Error', { description: err.message || 'Failed to complete synchronization.' });
+      }
+    }
+  }
+
+  private setupNetworkStateListener(): void {
+    window.addEventListener('online', async () => {
+      console.log('App went online. Flashing offline punches to MongoDB...');
+      await this.triggerDeviceDbSync(false);
     });
   }
 }
