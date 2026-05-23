@@ -66,7 +66,7 @@ function createLoadingWindow() {
     }
   });
 
-  loadingWindow.loadFile(path.join(__dirname, '../../renderer/index.html'));
+  loadingWindow.loadFile(path.join(__dirname, '../../renderer/dashboard/dashboard.html'));
 
   loadingWindow.once('ready-to-show', () => {
     if (loadingWindow) {

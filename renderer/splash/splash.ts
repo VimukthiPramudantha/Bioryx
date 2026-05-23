@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
           
           // Redirect to dashboard after a short delay
           setTimeout(() => {
-            window.location.href = 'dashboard.html';
+            window.location.href = '../dashboard/dashboard.html';
           }, 1500);
         } else if (data.status === 'error') {
           toast.error('Database Connection Failed', {
