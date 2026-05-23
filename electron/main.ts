@@ -52,8 +52,8 @@ async function connectToDatabase(window: BrowserWindow) {
 
 function createLoadingWindow() {
   loadingWindow = new BrowserWindow({
-    width: 480,
-    height: 480,
+    width: 1200,
+    height: 800,
     frame: false,          
     transparent: true,    
     resizable: true,
