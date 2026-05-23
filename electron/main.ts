@@ -113,6 +113,13 @@ ipcMain.handle('zkteco-test-connection', async (_event, ip: string, port: number
   return await zktecoService.testConnection(ip, port);
 });
 
+ipcMain.handle('get-sync-status', async () => {
+  return {
+    deviceStatus: zktecoService.deviceStatus,
+    lastSyncTime: zktecoService.lastSyncTime ? zktecoService.lastSyncTime.toISOString() : null
+  };
+});
+
 app.whenReady().then(() => {
   createLoadingWindow();
 

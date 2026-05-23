@@ -7,7 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDbStatus: (callback: (event: any, data: any) => void) => {
     ipcRenderer.on('db-status', callback);
   },
-  testZkTecoConnection: (ip: string, port: number) => ipcRenderer.invoke('zkteco-test-connection', ip, port)
+  testZkTecoConnection: (ip: string, port: number) => ipcRenderer.invoke('zkteco-test-connection', ip, port),
+  getSyncStatus: () => ipcRenderer.invoke('get-sync-status')
 });
 
 window.addEventListener('DOMContentLoaded', () => {

@@ -2,6 +2,8 @@ const ZKTeco = require('zkteco-js');
 
 export class ZKTecoService {
   private zk: any | null = null;
+  public deviceStatus: 'Connected' | 'Disconnected' = 'Disconnected';
+  public lastSyncTime: Date | null = null;
 
   async testConnection(ip: string, port: number = 4370): Promise<any> {
     try {
@@ -15,6 +17,10 @@ export class ZKTecoService {
       const info = await this.zk.getInfo();
       console.log("ZKTeco Device connected successfully. Info:", info);
 
+      // Update state
+      this.deviceStatus = 'Connected';
+      this.lastSyncTime = new Date();
+
       // Disconnect immediately since we just want to test
       await this.zk.disconnect();
       this.zk = null;
@@ -22,6 +28,8 @@ export class ZKTecoService {
       return { success: true, info };
     } catch (error: any) {
       console.error(`Failed to connect to ZKTeco device at ${ip}:${port}`, error);
+      
+      this.deviceStatus = 'Disconnected';
       
       if (this.zk) {
         try {

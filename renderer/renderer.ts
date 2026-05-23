@@ -48,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
           toast.success('Database Connected', {
             description: 'Your MongoDB Atlas connection has been established successfully.'
           });
+          
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
         } else if (data.status === 'error') {
           toast.error('Database Connection Failed', {
             description: `Could not connect to Atlas cluster: ${data.message}`
@@ -96,13 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
         btnTestZk.textContent = 'Test Connection';
         btnTestZk.removeAttribute('disabled');
       }
-    });
-  }
-
-  const toast = (window as any).gooeyToast;
-  if (toast) {
-    toast.success('Changes saved', {
-      description: 'Your changes have been saved and synced successfully.',
     });
   }
 });
