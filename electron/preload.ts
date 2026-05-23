@@ -38,6 +38,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getConnectionState: () => ipcRenderer.invoke('get-connection-state'),
   getDeviceUsers: () => ipcRenderer.invoke('get-device-users'),
   syncDeviceDatabase: () => ipcRenderer.invoke('sync-device-database'),
+
+  // Device disconnect event
+  onDeviceDisconnected: (callback: (event: any, data: any) => void) => {
+    ipcRenderer.on('device-disconnected', callback);
+  },
 });
 
 window.addEventListener('DOMContentLoaded', () => {

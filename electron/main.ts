@@ -156,17 +156,41 @@ async function fetchAndArchiveDeviceLogs(deviceIp: string): Promise<void> {
     state: rec.state,
   }));
 
+  // ── 1. Save to local 7-day archive (always) ───────────────────────────
   const existing = readArchive();
   const merged   = mergeArchive(existing, incoming);
   const pruned   = pruneOlderThan7Days(merged);
   writeArchive(pruned);
+  console.log(`Archived ${incoming.length} device logs locally. Total after merge+prune: ${pruned.length}.`);
 
-  console.log(`Archived ${incoming.length} device logs. Total after merge+prune: ${pruned.length}.`);
+  // ── 2. Push into MongoDB daily attendance docs (when DB is connected) ─
+  if (isDbConnected && dbClient) {
+    try {
+      // Sort chronologically so IN/OUT order is correct
+      const sorted = [...incoming].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+      let synced = 0;
+      for (const log of sorted) {
+        const res = await AttendanceDbService.saveOrUpdatePunch(
+          dbClient,
+          activeCollectionName,
+          log.userId,
+          new Date(log.timestamp),
+          app.getPath('userData')
+        );
+        if (res.success) synced++;
+      }
+      console.log(`Pushed ${synced}/${incoming.length} device logs into MongoDB daily attendance.`);
+    } catch (err) {
+      console.error('Failed to push device logs to MongoDB:', err);
+    }
+  }
 
-  // Notify frontend that fresh logs are available
+  // ── 3. Notify frontend ────────────────────────────────────────────────
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('db-status', {
-      synced: false,
+      synced: isDbConnected,
       count:  pruned.length,
       message: `Fetched ${incoming.length} attendance records from the ZKTeco reader.`
     });
@@ -394,6 +418,33 @@ zktecoService.onRealTimePunch = async (punch) => {
   }
 };
 
+// ── Handle unexpected ZKTeco device disconnection ──────────────────────────
+
+zktecoService.onDisconnected = async () => {
+  console.warn('ZKTeco device dropped connection. Handling disconnect...');
+
+  // Stop the periodic sync interval
+  stopZktecoSyncInterval();
+
+  // Try to flush any locally cached punches to MongoDB immediately
+  if (isDbConnected && dbClient) {
+    console.log('Device disconnected. Flushing offline cache to MongoDB...');
+    await syncOfflinePunches().catch(err =>
+      console.error('Failed to flush cache after device disconnect:', err)
+    );
+  } else {
+    // DB also offline — cached punches stay locally until both reconnect
+    console.warn('Device disconnected and MongoDB is offline. Cached punches remain local until reconnected.');
+  }
+
+  // Notify the renderer that the device has disconnected
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('device-disconnected', {
+      message: 'ZKTeco device connection was lost. Local records are saved and will sync when reconnected.'
+    });
+  }
+};
+
 // ── Window Controls IPC ────────────────────────────────────────────────────
 
 ipcMain.on('window-minimize', () => {
@@ -432,6 +483,15 @@ ipcMain.handle('connect-zkteco', async (_event, ip: string, port: number) => {
 
 ipcMain.handle('disconnect-zkteco', async () => {
   stopZktecoSyncInterval();
+
+  // Flush any locally cached punches to MongoDB before disconnecting
+  if (isDbConnected && dbClient) {
+    console.log('Manual disconnect: flushing offline cache to MongoDB...');
+    await syncOfflinePunches().catch(err =>
+      console.error('Failed to flush cache on manual disconnect:', err)
+    );
+  }
+
   await zktecoService.disconnect();
   return { success: true };
 });
@@ -475,17 +535,61 @@ ipcMain.handle('get-sync-status', async () => {
 });
 
 ipcMain.handle('get-attendance-logs-archive', async () => {
-  const logs = readArchive();
-  const pruned = pruneOlderThan7Days(logs);
-  // Also append any cached offline punches as attendance entries
+  let baseLogs: ArchivedAttLog[] = [];
+
+  if (isDbConnected && dbClient) {
+    // ── Primary source: MongoDB ───────────────────────────────────────────
+    try {
+      const db = dbClient.db("bioryx");
+      const col = db.collection(activeCollectionName);
+
+      // Fetch all daily attendance documents
+      const dailyDocs = await col.find({}).toArray();
+
+      // Reconstruct raw punch events from the records array
+      for (const doc of dailyDocs) {
+        if (!Array.isArray(doc.records)) continue;
+        for (const rec of doc.records) {
+          // inTime punch
+          if (rec.inTime) {
+            baseLogs.push({
+              userId: String(rec.userId),
+              timestamp: new Date(rec.inTime).toISOString(),
+              deviceIp: rec.deviceIp || zktecoService.deviceIp || '',
+            });
+          }
+          // outTime punch (only if different from inTime)
+          if (rec.outTime) {
+            baseLogs.push({
+              userId: String(rec.userId),
+              timestamp: new Date(rec.outTime).toISOString(),
+              deviceIp: rec.deviceIp || zktecoService.deviceIp || '',
+            });
+          }
+        }
+      }
+
+      console.log(`Fetched ${baseLogs.length} punch events from MongoDB for attendance table.`);
+    } catch (err) {
+      console.error('Failed to fetch attendance from MongoDB, falling back to local archive:', err);
+      // Fallback to local archive on DB error
+      baseLogs = pruneOlderThan7Days(readArchive());
+    }
+  } else {
+    // ── Fallback source: Local 7-day JSON archive ─────────────────────────
+    console.log('MongoDB offline — using local attendance archive as fallback.');
+    baseLogs = pruneOlderThan7Days(readArchive());
+  }
+
+  // Always merge in any offline cached punches that haven't been synced yet
   const offlinePunches = getCachedPunches();
   const offlineAsLogs: ArchivedAttLog[] = offlinePunches.map(p => ({
     userId: p.userId,
     timestamp: p.attTime,
     deviceIp: p.deviceIp
   }));
-  const merged = mergeArchive(pruned, offlineAsLogs);
-  return merged;
+
+  return mergeArchive(baseLogs, offlineAsLogs);
 });
 
 ipcMain.handle('get-device-users', async () => {

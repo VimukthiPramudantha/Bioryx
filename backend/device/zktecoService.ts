@@ -9,13 +9,26 @@ export class ZKTecoService {
   // Callback to emit punch events in real time to the main process
   public onRealTimePunch: ((punch: { userId: string; attTime: Date }) => void) | null = null;
 
+  // Callback fired when the device connection drops unexpectedly
+  public onDisconnected: (() => void) | null = null;
+
   async connect(ip: string, port: number = 4370): Promise<{ success: boolean; info?: any; error?: string }> {
     await this.disconnect();
 
     try {
       console.log(`Connecting to ZKTeco device at ${ip}:${port}...`);
       this.zk = new ZKTeco(ip, port, 10000, 4000);
-      await this.zk.createSocket();
+      await this.zk.createSocket(
+        undefined,
+        () => {
+          // Socket closed unexpectedly
+          console.warn('ZKTeco socket closed unexpectedly.');
+          this.deviceStatus = 'Disconnected';
+          this.deviceIp = '';
+          this.zk = null;
+          if (this.onDisconnected) this.onDisconnected();
+        }
+      );
 
       // Ensure the device is enabled
       try {
