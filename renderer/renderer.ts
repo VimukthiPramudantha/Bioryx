@@ -98,4 +98,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  const toast = (window as any).gooeyToast;
+  if (toast) {
+    toast.success('Changes saved', {
+      description: 'Your changes have been saved and synced successfully.',
+    });
+  }
 });
