@@ -7,10 +7,10 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="gooey-toast.css">
+  <link rel="stylesheet" href="../core/globals.css">
+  <link rel="stylesheet" href="../core/gooey-toast.css">
 </head>
 <body>
   <div class="title-bar">
@@ -52,18 +52,23 @@
       <h1 class="app-title">BIORYX</h1>
       <p class="app-subtitle">Attendance Synchronization System</p>
       
-      <div class="progress-container">
+      <div class="progress-container" id="loading-progress">
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
         <div class="status-message" id="status-text">Initializing synchronization engine...</div>
+      </div>
+
+      <div class="zkteco-test-container">
+        <input type="text" id="zk-ip-input" placeholder="Device IP (e.g. 192.168.1.201)" class="glass-input" value="192.168.1.201" />
+        <button id="btn-test-zk" class="glass-btn">Test Connection</button>
       </div>
     </div>
   </div>
 
   <GooeyToaster position="top-right"></GooeyToaster>
 
-  <script defer src="../dist/renderer/gooey-toast.js"></script>
-  <script defer src="../dist/renderer/renderer.js"></script>
+  <script defer src="../../dist/renderer/core/gooey-toast.js"></script>
+  <script defer src="../../dist/renderer/splash/splash.js"></script>
 </body>
 </html>
