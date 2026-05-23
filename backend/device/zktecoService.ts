@@ -91,6 +91,20 @@ export class ZKTecoService {
     }
   }
 
+  async getUsers(): Promise<{ success: boolean; data?: any[]; error?: string }> {
+    if (!this.zk) {
+      return { success: false, error: 'Device not connected' };
+    }
+    try {
+      console.log('Fetching user records from ZKTeco...');
+      const res = await this.zk.getUsers();
+      return { success: true, data: res.data };
+    } catch (err: any) {
+      console.error('Failed to get users from device:', err);
+      return { success: false, error: err.message || 'Failed to get users' };
+    }
+  }
+
   async testConnection(ip: string, port: number = 4370): Promise<{ success: boolean; info?: any; error?: string }> {
     let tempZk: any = null;
     try {

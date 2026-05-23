@@ -35,6 +35,57 @@ interface ArchivedAttLog {
   state?: number;
 }
 
+interface DeviceUser {
+  userId: string;
+  name: string;
+  role?: number;
+  cardno?: number;
+}
+
+// ── Device Users Archive Utilities ────────────────────────────────────────
+
+function getUserArchiveFilePath(): string {
+  return path.join(app.getPath('userData'), 'device_users_archive.json');
+}
+
+function readUserArchive(): DeviceUser[] {
+  try {
+    const filePath = getUserArchiveFilePath();
+    if (fs.existsSync(filePath)) {
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
+  } catch (err) {
+    console.error('Error reading device users archive:', err);
+  }
+  return [];
+}
+
+function writeUserArchive(users: DeviceUser[]) {
+  try {
+    fs.writeFileSync(getUserArchiveFilePath(), JSON.stringify(users, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error writing device users archive:', err);
+  }
+}
+
+async function fetchAndArchiveDeviceUsers(): Promise<void> {
+  const result = await zktecoService.getUsers();
+  if (!result.success || !result.data) {
+    console.warn('Could not fetch users from device:', result.error);
+    return;
+  }
+
+  const incoming: DeviceUser[] = result.data.map((u: any) => ({
+    userId: String(u.userId ?? u.user_id ?? ''),
+    name: String(u.name || ''),
+    role: u.role,
+    cardno: u.cardno,
+  }));
+
+  writeUserArchive(incoming);
+  console.log(`Archived ${incoming.length} device users.`);
+}
+
 // ── Attendance Archive Utilities (7-day local storage) ────────────────────
 
 function getArchiveFilePath(): string {
@@ -321,10 +372,13 @@ ipcMain.on('window-close', () => {
 ipcMain.handle('connect-zkteco', async (_event, ip: string, port: number) => {
   const result = await zktecoService.connect(ip, port);
 
-  // Automatically pull & archive all device logs upon successful connection
+  // Automatically pull & archive all device logs and users upon successful connection
   if (result.success) {
     fetchAndArchiveDeviceLogs(ip).catch(err =>
       console.error('Background archive fetch failed:', err)
+    );
+    fetchAndArchiveDeviceUsers().catch(err =>
+      console.error('Background users fetch failed:', err)
     );
   }
 
@@ -386,6 +440,10 @@ ipcMain.handle('get-attendance-logs-archive', async () => {
   }));
   const merged = mergeArchive(pruned, offlineAsLogs);
   return merged;
+});
+
+ipcMain.handle('get-device-users', async () => {
+  return readUserArchive();
 });
 
 app.whenReady().then(() => {

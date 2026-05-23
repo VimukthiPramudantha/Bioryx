@@ -5,10 +5,18 @@ interface ArchivedPunch {
   mongoSynced?: boolean;
 }
 
+interface DeviceUser {
+  userId: string;
+  name: string;
+  role?: number;
+  cardno?: number;
+}
+
 class BioryxAttendance {
   private container: HTMLElement;
   private allLogs: ArchivedPunch[] = [];
   private livePunches: ArchivedPunch[] = [];
+  private deviceUsers: DeviceUser[] = [];
   
   private refs: {
     dateFilter: HTMLInputElement | null;
@@ -137,6 +145,9 @@ class BioryxAttendance {
     if (!api?.getAttendanceLogsArchive) return;
     try {
       this.allLogs = await api.getAttendanceLogsArchive();
+      if (api.getDeviceUsers) {
+        this.deviceUsers = await api.getDeviceUsers();
+      }
       this.processAndRenderLogs();
     } catch (err: any) {
       console.error('Failed to load attendance logs archive:', err);
@@ -224,6 +235,7 @@ class BioryxAttendance {
     // Apply Employee Search Filter and calculate attendance
     const rowsData: Array<{
       userId: string;
+      userName: string;
       inTime: string;
       outTime: string;
       hours: string;
@@ -235,8 +247,9 @@ class BioryxAttendance {
       // Sort punches chronologically
       punches.sort((a, b) => a.getTime() - b.getTime());
 
-      // Search matches userId or simulated name
-      const empName = `User #${userId}`;
+      // Search matches userId or device name
+      const userObj = this.deviceUsers.find(u => u.userId === userId);
+      const empName = userObj ? userObj.name : `User #${userId}`;
       const searchMatch = !empVal || 
                           userId.toLowerCase().includes(empVal) || 
                           empName.toLowerCase().includes(empVal);
@@ -275,6 +288,7 @@ class BioryxAttendance {
 
       rowsData.push({
         userId,
+        userName: empName,
         inTime: inTimeStr,
         outTime: outTimeStr,
         hours: hoursStr,
@@ -303,7 +317,12 @@ class BioryxAttendance {
     rowsData.forEach(row => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><strong>User #${row.userId}</strong></td>
+        <td>
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-weight: 600; color: var(--text-primary);">${row.userName}</span>
+            <span style="font-size: 11px; color: var(--text-secondary);">ID: ${row.userId}</span>
+          </div>
+        </td>
         <td><span style="color: var(--primary); font-weight:500;">${row.inTime}</span></td>
         <td><span style="color: ${row.outTime === '--' ? 'var(--text-secondary)' : 'var(--success)'}; font-weight:500;">${row.outTime}</span></td>
         <td><strong>${row.hours}</strong></td>
