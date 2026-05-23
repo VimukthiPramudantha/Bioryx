@@ -535,3 +535,267 @@
     transform: translateY(0);
   }
 }
+
+.dm-root {
+  animation: fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.dm-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Card ── */
+.dm-card {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 20px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.dm-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.dm-card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(35, 169, 242, 0.08);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dm-card-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.dm-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.dm-card-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.dm-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+}
+
+/* ── Fields ── */
+.dm-field-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.dm-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.dm-field-sm {
+  flex: 0 0 130px;
+}
+
+.dm-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dm-input {
+  padding: 11px 14px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  width: 100%;
+}
+
+.dm-input:focus {
+  border-color: var(--primary-color);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(35, 169, 242, 0.12);
+}
+
+.dm-hint {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 6px;
+}
+
+/* ── Actions ── */
+.dm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--sidebar-border);
+}
+
+.dm-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dm-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.dm-btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(35, 169, 242, 0.25);
+}
+
+.dm-btn-primary:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(35, 169, 242, 0.35);
+}
+
+.dm-btn-secondary {
+  background: #f1f5f9;
+  color: var(--text-primary);
+  border: 1px solid #e2e8f0;
+}
+
+.dm-btn-secondary:not(:disabled):hover {
+  background: #e2e8f0;
+  transform: translateY(-1px);
+}
+
+.dm-btn-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.dm-btn-danger:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
+}
+
+/* ── Status Column ── */
+.dm-status-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dm-status-card {
+  background: var(--sidebar-bg);
+  border: 1px solid var(--sidebar-border);
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+}
+
+.dm-status-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+
+.dm-status-card-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+}
+
+.dm-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+}
+
+.dm-badge-online {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+.dm-badge-offline {
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+}
+
+.dm-status-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dm-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.dm-status-row-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.dm-status-row-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Poppins', monospace;
+}
+
