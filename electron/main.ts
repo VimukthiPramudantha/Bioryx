@@ -349,7 +349,7 @@ async function syncOfflinePunches() {
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1500,
     height: 800,
     frame: false,
     transparent: true,

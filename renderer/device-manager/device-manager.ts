@@ -241,7 +241,6 @@ class BioryxDeviceManager {
     this.refs.devicePing = this.container.querySelector("#dm-device-ping");
     this.refs.mongoPing = this.container.querySelector("#dm-mongo-ping");
 
-    // Auto-save inputs to localStorage on change
     [
       this.refs.ipInput,
       this.refs.portInput,
@@ -251,7 +250,6 @@ class BioryxDeviceManager {
       if (el) el.addEventListener("input", () => this.saveToStorage());
     });
 
-    // ZKTeco Connect / Disconnect Toggle
     this.refs.connectZkBtn?.addEventListener("click", () => {
       if (this.state.deviceConnected) {
         this.handleDisconnectZk();
@@ -260,7 +258,6 @@ class BioryxDeviceManager {
       }
     });
 
-    // MongoDB Connect / Disconnect Toggle
     this.refs.connectMongoBtn?.addEventListener("click", () => {
       if (this.state.mongoConnected) {
         this.handleDisconnectMongo();
@@ -269,11 +266,9 @@ class BioryxDeviceManager {
       }
     });
 
-    // Test Connection (one-shot)
     this.refs.testBtn?.addEventListener("click", () => this.handleTest());
   }
 
-  // ── localStorage persistence ──────────────────────────────────────────────
 
   private saveToStorage(): void {
     const config: DeviceManagerConfig = {
@@ -310,7 +305,6 @@ class BioryxDeviceManager {
     } catch (_) { /* skip */ }
   }
 
-  // ── Sync state from backend on mount ─────────────────────────────────────
 
   private async syncStateFromBackend(): Promise<void> {
     const api = (window as any).electronAPI;
@@ -325,7 +319,6 @@ class BioryxDeviceManager {
     } catch (_) { /* ignore */ }
   }
 
-  // ── Connect ZKTeco Reader ────────────────────────────────────────────────
 
   private async handleConnectZk(): Promise<void> {
     const ip = (this.refs.ipInput?.value || "").trim();
@@ -390,7 +383,6 @@ class BioryxDeviceManager {
     }
   }
 
-  // ── Disconnect ZKTeco Reader ─────────────────────────────────────────────
 
   private async handleDisconnectZk(): Promise<void> {
     const toast = (window as any).gooeyToast;
@@ -426,7 +418,6 @@ class BioryxDeviceManager {
     }
   }
 
-  // ── Connect MongoDB Database ─────────────────────────────────────────────
 
   private async handleConnectMongo(): Promise<void> {
     const mongoUri = (this.refs.mongoUriInput?.value || "").trim();
@@ -490,7 +481,6 @@ class BioryxDeviceManager {
     }
   }
 
-  // ── Disconnect MongoDB Database ──────────────────────────────────────────
 
   private async handleDisconnectMongo(): Promise<void> {
     const toast = (window as any).gooeyToast;
@@ -525,7 +515,6 @@ class BioryxDeviceManager {
     }
   }
 
-  // ── Test ZKTeco Reader Connection (one-shot) ─────────────────────────────
 
   private async handleTest(): Promise<void> {
     const ip = (this.refs.ipInput?.value || "").trim();
@@ -590,7 +579,6 @@ class BioryxDeviceManager {
     }
   }
 
-  // ── UI helpers ────────────────────────────────────────────────────────────
 
   private updateStatusUI(): void {
     const {
@@ -647,7 +635,6 @@ class BioryxDeviceManager {
   }
 
   private updateConnectButtons(): void {
-    // 1. ZKTeco button
     const zkBtn = this.refs.connectZkBtn;
     if (zkBtn) {
       const isConnected = this.state.deviceConnected;
@@ -659,7 +646,6 @@ class BioryxDeviceManager {
         : `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg> Connect Reader`;
     }
 
-    // 2. MongoDB button
     const mongoBtn = this.refs.connectMongoBtn;
     if (mongoBtn) {
       const isConnected = this.state.mongoConnected;

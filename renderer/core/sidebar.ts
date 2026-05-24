@@ -31,7 +31,6 @@ class BioryxSidebar {
     `;
     sidebarEl.appendChild(header);
 
-    // Navigation Container
     const nav = document.createElement('nav');
     nav.className = 'sidebar-nav';
 

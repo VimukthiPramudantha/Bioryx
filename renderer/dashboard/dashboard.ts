@@ -42,12 +42,10 @@ function createTableRow(...cells: string[]): HTMLElement {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // ── Clean slate ──────────────────────────────────────────────────────────
   const toaster = document.querySelector('GooeyToaster');
   document.body.innerHTML = '';
   if (toaster) document.body.appendChild(toaster);
 
-  // ── Title bar ────────────────────────────────────────────────────────────
   const titleBar = createElement('div', { className: 'title-bar' },
     createElement('div', { className: 'title-bar-title' }, 'Bioryx — Attendance Synchronizer'),
     createElement('div', { className: 'window-controls' },
@@ -60,7 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     )
   );
 
-  // ── Header status elements ────────────────────────────────────────────────
   const statusDot   = createElement('span', { className: 'status-dot', id: 'device-status-dot' });
   const statusText  = createElement('span', { id: 'device-status-text' }, 'Device: --');
   const syncTimeText = createElement('span', { id: 'last-sync-time' }, 'Last Sync: --');
@@ -72,7 +69,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnManualSync
   );
 
-  // ── Layout scaffold ───────────────────────────────────────────────────────
   const appLayout    = createElement('div', { className: 'app-layout' });
   const mainContent  = createElement('div', { className: 'main-content' });
   const contentHeader = createElement('header', { className: 'content-header' });
@@ -84,7 +80,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   mainContent.appendChild(contentHeader);
   mainContent.appendChild(contentBody);
 
-  // ── Instantiate Sidebar ───────────────────────────────────────────────────
   if ((window as any).BioryxSidebar) {
     const sidebar = new (window as any).BioryxSidebar((tabId: string, tabLabel: string) => {
       switchTab(tabId, tabLabel);
@@ -96,11 +91,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.body.appendChild(titleBar);
   document.body.appendChild(appLayout);
 
-  // ── Instantiate Device Manager (hidden, manages its own state) ────────────
   let deviceManagerEl: HTMLElement | null = null;
   if ((window as any).BioryxDeviceManager) {
     const dm = new (window as any).BioryxDeviceManager((state: any) => {
-      // Propagate connection state to the header status indicator
       if (state.deviceConnected) {
         statusDot.className   = 'status-dot connected';
         statusText.textContent = `Device: ${state.deviceIp || 'Connected'}`;
@@ -112,14 +105,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     deviceManagerEl = dm.getElement();
   }
 
-  // ── Instantiate Attendance Module ─────────────────────────────────────────
   let attendanceEl: HTMLElement | null = null;
   if ((window as any).BioryxAttendance) {
     const att = new (window as any).BioryxAttendance();
     attendanceEl = att.getElement();
   }
 
-  // ── Window controls ───────────────────────────────────────────────────────
   titleBar.querySelector('#btn-minimize')?.addEventListener('click', () =>
     (window as any).electronAPI?.minimize());
   titleBar.querySelector('#btn-maximize')?.addEventListener('click', () =>
@@ -127,7 +118,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   titleBar.querySelector('#btn-close')?.addEventListener('click', () =>
     (window as any).electronAPI?.close());
 
-  // ── Persistent header status sync ────────────────────────────────────────
   const refreshStatus = async () => {
     const api = (window as any).electronAPI;
     if (!api?.getConnectionState) return;
@@ -146,7 +136,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         syncTimeText.textContent = 'Last Sync: Never';
       }
-    } catch (_) { /* silently ignore */ }
+    } catch (_) {}
   };
 
   await refreshStatus();
@@ -161,7 +151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     btnManualSync.textContent = 'Manual Sync';
   });
 
-  // ── Tab view router ───────────────────────────────────────────────────────
   function switchTab(tabId: string, tabLabel: string) {
     contentTitle.textContent = tabLabel;
     contentBody.innerHTML    = '';
@@ -176,9 +165,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── 1. Dashboard ──────────────────────────────────────────────────────────
   function renderDashboard() {
-    // Dynamic calculation of total attendance based on real-time punches
     const baseAttendance = 145;
     const totalTodayAttendance = baseAttendance + livePunches.length;
 
@@ -214,7 +201,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tb = document.createElement('tbody');
         tb.id = 'dashboard-activity-tbody';
 
-        // Prepend real-time live activities
         liveActivity.forEach(act => {
           tb.appendChild(createTableRow(
             act.deviceName,
@@ -225,7 +211,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           ));
         });
 
-        // Add static placeholders
         tb.appendChild(createTableRow('ZKTeco Main Reader',      '192.168.1.201', 'Log Fetch', '<span class="badge badge-success">Success</span>', 'Just Now'));
         tb.appendChild(createTableRow('ZKTeco Secondary Reader', '192.168.1.202', 'Log Fetch', '<span class="badge badge-success">Success</span>', '10 mins ago'));
         tb.appendChild(createTableRow('Canteen Terminal',        '192.168.1.203', 'Ping',      '<span class="badge badge-danger">Offline</span>',  '1 hour ago'));
@@ -238,7 +223,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     contentBody.appendChild(tableWrap);
   }
 
-  // ── 2. Employees ──────────────────────────────────────────────────────────
   function renderEmployees() {
     const wrap = createElement('div', { className: 'table-container' },
       createElement('div', { className: 'table-header-row' },
@@ -269,7 +253,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     contentBody.appendChild(wrap);
   }
 
-  // ── 3. Attendance ─────────────────────────────────────────────────────────
   function renderAttendance() {
     if (attendanceEl) {
       contentBody.appendChild(attendanceEl);
@@ -282,7 +265,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── 4. Sync Manager ───────────────────────────────────────────────────────
   function renderSync() {
     const grid = createElement('div', { className: 'config-grid' },
       createElement('div', { className: 'config-card' },
@@ -320,7 +302,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     contentBody.appendChild(grid);
   }
 
-  // ── 5. Device Manager — delegates to BioryxDeviceManager component ────────
   function renderDeviceManager() {
     if (deviceManagerEl) {
       contentBody.appendChild(deviceManagerEl);
@@ -333,7 +314,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // ── 6. Settings ───────────────────────────────────────────────────────────
   function renderSettings() {
     const grid = createElement('div', { className: 'config-grid' },
       createElement('div', { className: 'config-card' },
@@ -359,7 +339,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     contentBody.appendChild(grid);
   }
 
-  // ── 7. Setup Live Listeners ───────────────────────────────────────────────
   const api = (window as any).electronAPI;
   const toast = (window as any).gooeyToast;
 
@@ -375,7 +354,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         mongoSynced: data.mongoSynced
       };
 
-      // Add to global state arrays (at the top, so they are drawn first when tab switches)
       livePunches.unshift(newPunch);
       
       const newAct = {
@@ -389,12 +367,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       };
       liveActivity.unshift(newAct);
 
-      // Display beautiful toast
       toast?.success('Real-time Punch', {
         description: `User #${data.userId} punched in at ${punchTime.toLocaleTimeString()}! Status: ${data.mongoSynced ? 'Synced to Atlas' : 'Offline Cached'}`
       });
 
-      // Dynamically update UI if currently viewing the dashboard tab
       const activityTbody = document.getElementById('dashboard-activity-tbody');
       if (activityTbody) {
         const newRow = createTableRow(
@@ -406,7 +382,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
         activityTbody.insertBefore(newRow, activityTbody.firstChild);
 
-        // Update Today's Attendance Metric value card!
         const valueElements = document.querySelectorAll('.metric-value');
         if (valueElements && valueElements[1]) {
           const current = parseInt(valueElements[1].textContent || '145', 10);
@@ -414,7 +389,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       }
 
-      // Dynamically update UI if currently viewing the attendance tab
       const attendanceTbody = document.getElementById('attendance-logs-tbody');
       if (attendanceTbody) {
         const newRow = createTableRow(
@@ -429,7 +403,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Handle DB offline-buffered sync status callbacks
   if (api?.onDbStatus) {
     api.onDbStatus((_event: any, data: { synced: boolean; count: number; message: string }) => {
       console.log('Frontend received database status event:', data);
@@ -438,10 +411,8 @@ document.addEventListener('DOMContentLoaded', async () => {
           description: data.message || `Successfully synchronized ${data.count} offline punch records to MongoDB Atlas.`
         });
 
-        // Update sync status on the header sync indicator
         refreshStatus();
 
-        // Update all badge statuses in the active live arrays to 'Synced'
         livePunches.forEach(p => p.mongoSynced = true);
         liveActivity.forEach(a => {
           if (a.action === 'Attendance Punch') {
@@ -449,7 +420,6 @@ document.addEventListener('DOMContentLoaded', async () => {
           }
         });
 
-        // If the current tab has tables, refresh them to show green 'Synced' badges
         const currentTab = document.querySelector('.sidebar-menu-item.active')?.getAttribute('data-tab');
         if (currentTab === 'dashboard') {
           renderDashboard();
@@ -460,6 +430,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  // Boot — render initial dashboard view
   renderDashboard();
 });

@@ -6,10 +6,8 @@ export class ZKTecoService {
   public deviceIp: string = '';
   public lastSyncTime: Date | null = null;
 
-  // Callback to emit punch events in real time to the main process
   public onRealTimePunch: ((punch: { userId: string; attTime: Date }) => void) | null = null;
 
-  // Callback fired when the device connection drops unexpectedly
   public onDisconnected: (() => void) | null = null;
 
   async connect(ip: string, port: number = 4370): Promise<{ success: boolean; info?: any; error?: string }> {
@@ -21,7 +19,6 @@ export class ZKTecoService {
       await this.zk.createSocket(
         undefined,
         () => {
-          // Socket closed unexpectedly
           console.warn('ZKTeco socket closed unexpectedly.');
           this.deviceStatus = 'Disconnected';
           this.deviceIp = '';
@@ -30,7 +27,6 @@ export class ZKTecoService {
         }
       );
 
-      // Ensure the device is enabled
       try {
         await this.zk.enableDevice();
       } catch (e) {
@@ -44,7 +40,6 @@ export class ZKTecoService {
       this.deviceIp = ip;
       this.lastSyncTime = new Date();
 
-      // Register real-time punch event listener
       try {
         await this.zk.getRealTimeLogs((log: any) => {
           if (this.onRealTimePunch && log) {
@@ -75,7 +70,6 @@ export class ZKTecoService {
   async disconnect(): Promise<void> {
     if (this.zk) {
       try {
-        // Disable real-time event notifications before disconnecting
         try {
           await this.zk.disableDevice();
         } catch (_) {}
@@ -132,7 +126,7 @@ export class ZKTecoService {
     } catch (error: any) {
       console.error(`ZKTeco test failed at ${ip}:${port}`, error);
       if (tempZk) {
-        try { await tempZk.disconnect(); } catch (_) { /* ignore */ }
+        try { await tempZk.disconnect(); } catch (_) {}
       }
       return { success: false, error: error.message || 'Connection failed' };
     }

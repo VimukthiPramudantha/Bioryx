@@ -10,14 +10,11 @@ export interface AttendanceRecord {
 }
 
 export interface DailyAttendanceDoc {
-  date: string; // YYYY-MM-DD
+  date: string;
   records: AttendanceRecord[];
 }
 
 export class AttendanceDbService {
-  /**
-   * Helper to retrieve a user's name from cached device users archive.
-   */
   private static getUserNameFromCache(userId: string, userDataPath: string): string {
     try {
       const filePath = path.join(userDataPath, 'device_users_archive.json');
@@ -34,9 +31,6 @@ export class AttendanceDbService {
     return `User #${userId}`;
   }
 
-  /**
-   * Main function to save or update attendance in the MongoDB database
-   */
   static async saveOrUpdatePunch(
     dbClient: MongoClient,
     collectionName: string,
@@ -48,7 +42,6 @@ export class AttendanceDbService {
       const db = dbClient.db("bioryx");
       const col = db.collection(collectionName);
 
-      // Extract local date string YYYY-MM-DD from punchTime
       const year = punchTime.getFullYear();
       const month = String(punchTime.getMonth() + 1).padStart(2, '0');
       const day = String(punchTime.getDate()).padStart(2, '0');
@@ -56,11 +49,9 @@ export class AttendanceDbService {
 
       const name = this.getUserNameFromCache(userId, userDataPath);
 
-      // 1. Find the document for the date
       const doc = await col.findOne({ date: dateStr });
 
       if (!doc) {
-        // Create new daily document with first record
         await col.insertOne({
           date: dateStr,
           records: [
@@ -75,12 +66,10 @@ export class AttendanceDbService {
         return { success: true, action: 'insert' };
       }
 
-      // 2. Document exists, check if user already has a record
       const records = doc.records || [];
       const userRecordExists = records.some((r: any) => String(r.userId) === String(userId));
 
       if (!userRecordExists) {
-        // User's first punch of the day: push a new entry
         await col.updateOne(
           { date: dateStr },
           {
@@ -96,7 +85,6 @@ export class AttendanceDbService {
         );
         return { success: true, action: 'insert' };
       } else {
-        // User already has an entry on this day: update their outTime
         const existingRecord = records.find((r: any) => String(r.userId) === String(userId));
         if (existingRecord) {
           const inTimeDate = new Date(existingRecord.inTime);
