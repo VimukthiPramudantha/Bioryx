@@ -1,6 +1,5 @@
 /* Light Theme CSS Layout and Modules for Bioryx Dashboard */
 
-/* --- Layout Structure --- */
 .app-layout {
   display: flex;
   width: 100vw;
@@ -10,14 +9,13 @@
   position: relative;
 }
 
-/* --- Sidebar Styling --- */
 .sidebar {
   width: 280px;
   background-color: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
-  padding: 58px 16px 24px; /* Space for draggable window title bar */
+  padding: 58px 16px 24px; 
   z-index: 10;
   flex-shrink: 0;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
@@ -95,7 +93,6 @@
   height: 20px;
 }
 
-/* --- Main Content Area --- */
 .main-content {
   flex: 1;
   display: flex;
@@ -107,7 +104,7 @@
 }
 
 .content-header {
-  padding: 58px 40px 20px; /* Offset for window title bar */
+  padding: 58px 40px 20px;
   border-bottom: 1px solid var(--sidebar-border);
   display: flex;
   justify-content: space-between;
@@ -129,10 +126,9 @@
   padding: 32px 40px 40px;
   overflow-y: auto;
   position: relative;
-  background-color: #f8fafc; /* Light gray-blue body fill */
+  background-color: #f8fafc; 
 }
 
-/* Custom Scrollbar for Content Body */
 .content-body::-webkit-scrollbar {
   width: 8px;
 }
@@ -147,7 +143,6 @@
   background: #94a3b8;
 }
 
-/* --- Persistent Status Bar (Top Header Right) --- */
 .status-bar {
   display: flex;
   align-items: center;
@@ -197,7 +192,6 @@
   border-radius: 8px;
 }
 
-/* --- Metrics Grid & Cards (Dashboard View) --- */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -271,7 +265,6 @@
   color: var(--text-primary);
 }
 
-/* --- Tables (Employee List & Attendance Log Views) --- */
 .table-container {
   background: var(--sidebar-bg);
   border: 1px solid var(--sidebar-border);
@@ -338,7 +331,6 @@
   background-color: #f8fafc;
 }
 
-/* Badges for status fields */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -363,7 +355,6 @@
   color: #dc2626;
 }
 
-/* --- Action Buttons --- */
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
@@ -398,7 +389,6 @@
   background: #e2e8f0;
 }
 
-/* --- Settings Forms & Config Cards --- */
 .config-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
@@ -468,7 +458,6 @@
   margin-top: 28px;
 }
 
-/* Sync Manager Module Styling */
 .sync-status-panel {
   display: flex;
   flex-direction: column;
@@ -524,7 +513,6 @@
   color: var(--text-secondary);
 }
 
-/* Animations */
 @keyframes fade-in-up {
   0% {
     opacity: 0;
@@ -547,7 +535,6 @@
   align-items: start;
 }
 
-/* ── Card ── */
 .dm-card {
   background: var(--sidebar-bg);
   border: 1px solid var(--sidebar-border);
@@ -605,7 +592,6 @@
   margin-bottom: 14px;
 }
 
-/* ── Fields ── */
 .dm-field-row {
   display: flex;
   gap: 16px;
@@ -657,7 +643,6 @@
   margin-top: 6px;
 }
 
-/* ── Actions ── */
 .dm-actions {
   display: flex;
   gap: 12px;
@@ -719,7 +704,6 @@
   box-shadow: 0 8px 20px rgba(239, 68, 68, 0.35);
 }
 
-/* ── Status Column ── */
 .dm-status-col {
   display: flex;
   flex-direction: column;

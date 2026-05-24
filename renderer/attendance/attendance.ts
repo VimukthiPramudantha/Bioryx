@@ -1,6 +1,6 @@
 interface ArchivedPunch {
   userId: string;
-  timestamp: string; // ISO string
+  timestamp: string;
   deviceIp: string;
   mongoSynced?: boolean;
 }
@@ -48,7 +48,6 @@ class BioryxAttendance {
     const root = document.createElement('div');
     root.className = 'dm-root';
 
-    // Get today's date formatted as YYYY-MM-DD
     const today = new Date().toISOString().split('T')[0];
 
     root.innerHTML = `
@@ -137,7 +136,6 @@ class BioryxAttendance {
     this.refs.refreshBtn = this.container.querySelector('#att-refresh-btn');
     this.refs.syncBtn    = this.container.querySelector('#att-sync-btn');
 
-    // Trigger filters on input change
     this.refs.dateFilter?.addEventListener('change', () => this.processAndRenderLogs());
     this.refs.empFilter?.addEventListener('input', () => this.processAndRenderLogs());
 
@@ -152,8 +150,7 @@ class BioryxAttendance {
     });
   }
 
-  // ── Load Logs from Backend ────────────────────────────────────────────────
-
+  
   private async loadLogs(): Promise<void> {
     const api = (window as any).electronAPI;
     if (!api?.getAttendanceLogsArchive) return;
@@ -170,14 +167,12 @@ class BioryxAttendance {
     }
   }
 
-  // ── Setup live punch listener ─────────────────────────────────────────────
 
   private setupLivePunchListener(): void {
     const api = (window as any).electronAPI;
     if (!api?.onRealTimePunch) return;
 
     api.onRealTimePunch((_event: any, punch: any) => {
-      // Map punch to our format
       const livePunch: ArchivedPunch = {
         userId: punch.userId,
         timestamp: punch.attTime,
@@ -185,23 +180,18 @@ class BioryxAttendance {
         mongoSynced: punch.mongoSynced
       };
       
-      // Append to live punches
       this.livePunches.push(livePunch);
 
-      // Reprocess and display
       this.processAndRenderLogs();
     });
   }
 
-  // ── Core Log Processing & In/Out Calculation Logic ─────────────────────────
-
   private processAndRenderLogs(): void {
     if (!this.refs.tableBody) return;
 
-    const dateVal = this.refs.dateFilter?.value; // YYYY-MM-DD
+    const dateVal = this.refs.dateFilter?.value;
     const empVal  = (this.refs.empFilter?.value || '').trim().toLowerCase();
 
-    // Update subtitles
     const subtitle = this.container.querySelector('#att-table-subtitle');
     if (subtitle && dateVal) {
       subtitle.textContent = `Attendance records for date: ${dateVal}`;
@@ -218,7 +208,6 @@ class BioryxAttendance {
       return;
     }
 
-    // Merge archived logs and live punches, ensuring no duplicates
     const punchMap = new Map<string, ArchivedPunch>();
     
     this.allLogs.forEach(p => {
@@ -230,13 +219,11 @@ class BioryxAttendance {
 
     const combinedPunches = Array.from(punchMap.values());
 
-    // Filter punches by selected date YYYY-MM-DD
     const dailyPunches = combinedPunches.filter(p => {
       const punchDate = p.timestamp.split('T')[0];
       return punchDate === dateVal;
     });
 
-    // Group punches by userId
     const employeeGroups = new Map<string, Date[]>();
     dailyPunches.forEach(p => {
       const timestamp = new Date(p.timestamp);
@@ -246,7 +233,6 @@ class BioryxAttendance {
       employeeGroups.get(p.userId)!.push(timestamp);
     });
 
-    // Apply Employee Search Filter and calculate attendance
     const rowsData: Array<{
       userId: string;
       userName: string;
@@ -258,10 +244,8 @@ class BioryxAttendance {
     }> = [];
 
     employeeGroups.forEach((punches, userId) => {
-      // Sort punches chronologically
       punches.sort((a, b) => a.getTime() - b.getTime());
 
-      // Search matches userId or device name
       const userObj = this.deviceUsers.find(u => u.userId === userId);
       const empName = userObj ? userObj.name : `User #${userId}`;
       const searchMatch = !empVal || 
@@ -286,7 +270,7 @@ class BioryxAttendance {
 
       if (lastPunch) {
         const diffMs = lastPunch.getTime() - firstPunch.getTime();
-        workingHoursNum = diffMs / (1000 * 60 * 60); // working hours in decimal
+        workingHoursNum = diffMs / (1000 * 60 * 60); 
         
         const totalMinutes = Math.round(diffMs / (1000 * 60));
         const hrs = Math.floor(totalMinutes / 60);
@@ -311,7 +295,6 @@ class BioryxAttendance {
       });
     });
 
-    // Render results in table
     this.refs.tableBody.innerHTML = '';
 
     if (rowsData.length === 0) {
@@ -325,7 +308,6 @@ class BioryxAttendance {
       return;
     }
 
-    // Sort by userId numerically
     rowsData.sort((a, b) => parseInt(a.userId, 10) - parseInt(b.userId, 10));
 
     rowsData.forEach(row => {
