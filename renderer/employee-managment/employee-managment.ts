@@ -69,7 +69,7 @@ class BioryxEmployeeManagment {
     this.refs.addBtn?.addEventListener('click', () => {
       (window as any).BioryxPopup?.show(
         'Employee registration flow is under development.',
-        'u can suport developer by useing git hub repo'
+        'You can support the development of this project by contributing to or starring our GitHub repository.'
       );
     });
   }
@@ -91,7 +91,6 @@ class BioryxEmployeeManagment {
 
     this.refs.tableBody.innerHTML = '';
 
-    // If there are no device users loaded (e.g. empty or disconnected), show dummy data so the screen isn't empty/boring.
     if (this.deviceUsers.length === 0) {
       const dummyEmployees = [
         { id: 'EMP001', name: 'John Doe', dept: 'Engineering', card: '1092834', enrolled: '2024-01-15' },
@@ -114,7 +113,6 @@ class BioryxEmployeeManagment {
       return;
     }
 
-    // Sort device users by numeric ID or string ID
     const sortedUsers = [...this.deviceUsers].sort((a, b) => {
       const numA = parseInt(a.userId, 10);
       const numB = parseInt(b.userId, 10);
