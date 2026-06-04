@@ -92,24 +92,13 @@ class BioryxEmployeeManagment {
     this.refs.tableBody.innerHTML = '';
 
     if (this.deviceUsers.length === 0) {
-      const dummyEmployees = [
-        { id: 'EMP001', name: 'John Doe', dept: 'Engineering', card: '1092834', enrolled: '2024-01-15' },
-        { id: 'EMP002', name: 'Jane Smith', dept: 'Human Resources', card: '1092835', enrolled: '2024-02-10' },
-        { id: 'EMP003', name: 'Alice Johnson', dept: 'Finance', card: '1092836', enrolled: '2024-03-01' },
-        { id: 'EMP004', name: 'Bob Brown', dept: 'Operations', card: '1092837', enrolled: '2024-03-12' }
-      ];
-
-      dummyEmployees.forEach(emp => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><span style="font-weight: 600; color: var(--text-primary);">${emp.id}</span></td>
-          <td>${emp.name}</td>
-          <td>${emp.dept}</td>
-          <td>${emp.card}</td>
-          <td>${emp.enrolled}</td>
-        `;
-        this.refs.tableBody!.appendChild(tr);
-      });
+      this.refs.tableBody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 32px 0;">
+            No enrolled employees found.
+          </td>
+        </tr>
+      `;
       return;
     }
 
