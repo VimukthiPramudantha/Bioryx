@@ -68,7 +68,9 @@ class BioryxEmployeeManagment {
 
     this.refs.addBtn?.addEventListener('click', () => {
       const toast = (window as any).gooeyToast;
-      toast?.info('Add Employee', { description: 'Employee registration flow is under development.' });
+      toast?.info('Employee registration flow is under development.', {
+        description: 'u can suport developer by useing git hub repo'
+      });
     });
   }
 
