@@ -111,6 +111,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     attendanceEl = att.getElement();
   }
 
+  let employeeManagmentEl: HTMLElement | null = null;
+  if ((window as any).BioryxEmployeeManagment) {
+    const emp = new (window as any).BioryxEmployeeManagment();
+    employeeManagmentEl = emp.getElement();
+  }
+
   titleBar.querySelector('#btn-minimize')?.addEventListener('click', () =>
     (window as any).electronAPI?.minimize());
   titleBar.querySelector('#btn-maximize')?.addEventListener('click', () =>
@@ -224,33 +230,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderEmployees() {
-    const wrap = createElement('div', { className: 'table-container' },
-      createElement('div', { className: 'table-header-row' },
-        createElement('div', { className: 'table-title-group' },
-          createElement('h3', {}, 'Active Employees'),
-          createElement('p', {}, 'Manage employee profiles, access groups, and fingerprint templates')
-        ),
-        createElement('button', { className: 'btn-primary' }, '+ Add Employee')
-      ),
-      (() => {
-        const t = createElement('table', { className: 'data-table' });
-        t.appendChild(createElement('thead', {},
-          createElement('tr', {},
-            createElement('th', {}, 'Employee ID'), createElement('th', {}, 'Name'),
-            createElement('th', {}, 'Department'),  createElement('th', {}, 'Card Number'),
-            createElement('th', {}, 'Enrolled')
-          )
-        ));
-        const tb = document.createElement('tbody');
-        tb.appendChild(createTableRow('EMP001', 'John Doe',       'Engineering',     '1092834', '2024-01-15'));
-        tb.appendChild(createTableRow('EMP002', 'Jane Smith',     'Human Resources', '1092835', '2024-02-10'));
-        tb.appendChild(createTableRow('EMP003', 'Alice Johnson',  'Finance',         '1092836', '2024-03-01'));
-        tb.appendChild(createTableRow('EMP004', 'Bob Brown',      'Operations',      '1092837', '2024-03-12'));
-        t.appendChild(tb);
-        return t;
-      })()
-    );
-    contentBody.appendChild(wrap);
+    if (employeeManagmentEl) {
+      contentBody.appendChild(employeeManagmentEl);
+    } else {
+      contentBody.appendChild(
+        createElement('div', { className: 'config-card' },
+          createElement('p', {}, 'Employee Management component failed to load.')
+        )
+      );
+    }
   }
 
   function renderAttendance() {
