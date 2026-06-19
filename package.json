@@ -1,20 +1,44 @@
 {
   "name": "bioryx",
   "version": "1.0.0",
-  "description": "",
+  "description": "Bioryx Attendance Management System",
   "license": "ISC",
-  "author": "",
+  "author": "Vimukthi Pramudantha",
   "type": "commonjs",
   "main": "dist/electron/main.js",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
     "start": "tsc && electron .",
+    "dist": "npm run build && electron-builder",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "build": {
+    "appId": "com.bioryx.app",
+    "productName": "Bioryx",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/logo.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
     "electron": "^42.2.0",
+    "electron-builder": "^26.15.3",
     "typescript": "^6.0.3"
   },
   "dependencies": {
