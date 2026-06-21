@@ -1,3 +1,4 @@
 .env
 /release/win-unpacked
 node_modules
+dist
