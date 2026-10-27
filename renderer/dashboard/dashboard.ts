@@ -171,18 +171,81 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  function renderDashboard() {
-    const baseAttendance = 145;
-    const totalTodayAttendance = baseAttendance + livePunches.length;
+  async function updateDashboardMetrics(grid: HTMLElement) {
+    try {
+      const api = (window as any).electronAPI;
+      if (!api) return;
 
+      const [users, archiveLogs] = await Promise.all([
+        api.getDeviceUsers ? api.getDeviceUsers() : Promise.resolve([]),
+        api.getAttendanceLogsArchive ? api.getAttendanceLogsArchive() : Promise.resolve([])
+      ]);
+
+      const totalEmployees = Array.isArray(users) ? users.length : 0;
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      const punchMap = new Map<string, { userId: string; timestamp: string }>();
+      if (Array.isArray(archiveLogs)) {
+        archiveLogs.forEach((p: any) => {
+          if (p && p.userId && p.timestamp) {
+            punchMap.set(`${p.userId}_${p.timestamp}`, { userId: String(p.userId), timestamp: String(p.timestamp) });
+          }
+        });
+      }
+      livePunches.forEach((p) => {
+        const tsStr = p.timestamp instanceof Date ? p.timestamp.toISOString() : String(p.timestamp);
+        punchMap.set(`${p.userId}_${tsStr}`, { userId: String(p.userId), timestamp: tsStr });
+      });
+
+      const todayPunches = Array.from(punchMap.values()).filter(p => {
+        return p.timestamp && p.timestamp.split('T')[0] === todayStr;
+      });
+
+      const userPunchGroups = new Map<string, Date[]>();
+      todayPunches.forEach(p => {
+        const t = new Date(p.timestamp);
+        if (!userPunchGroups.has(p.userId)) {
+          userPunchGroups.set(p.userId, []);
+        }
+        userPunchGroups.get(p.userId)!.push(t);
+      });
+
+      const todayAttendance = userPunchGroups.size;
+      let lateArrivals = 0;
+      let missedPunches = 0;
+
+      userPunchGroups.forEach((punches) => {
+        punches.sort((a, b) => a.getTime() - b.getTime());
+        const firstPunch = punches[0];
+        if (firstPunch.getHours() > 9 || (firstPunch.getHours() === 9 && firstPunch.getMinutes() > 15)) {
+          lateArrivals++;
+        }
+        if (punches.length === 1) {
+          missedPunches++;
+        }
+      });
+
+      const metricVals = grid.querySelectorAll('.metric-value');
+      if (metricVals && metricVals.length >= 4) {
+        metricVals[0].textContent = String(totalEmployees);
+        metricVals[1].textContent = String(todayAttendance);
+        metricVals[2].textContent = String(lateArrivals);
+        metricVals[3].textContent = String(missedPunches);
+      }
+    } catch (err) {
+      console.error('Error calculating dashboard metrics:', err);
+    }
+  }
+
+  function renderDashboard() {
     const grid = createElement('div', { className: 'metrics-grid' },
-      createMetricCard('Total Employees',    '150', 'blue',
+      createMetricCard('Total Employees',    '0', 'blue',
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>'),
-      createMetricCard("Today's Attendance", String(totalTodayAttendance), 'green',
+      createMetricCard("Today's Attendance", '0', 'green',
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'),
-      createMetricCard('Late Arrivals',      '12',  'yellow',
+      createMetricCard('Late Arrivals',      '0', 'yellow',
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>'),
-      createMetricCard('Missed Punches',     '3',   'red',
+      createMetricCard('Missed Punches',     '0', 'red',
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>')
     );
 
@@ -207,19 +270,25 @@ document.addEventListener('DOMContentLoaded', async () => {
         const tb = document.createElement('tbody');
         tb.id = 'dashboard-activity-tbody';
 
-        liveActivity.forEach(act => {
-          tb.appendChild(createTableRow(
-            act.deviceName,
-            act.ipAddress,
-            act.action,
-            act.status,
-            act.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-          ));
-        });
-
-        tb.appendChild(createTableRow('ZKTeco Main Reader',      '192.168.1.201', 'Log Fetch', '<span class="badge badge-success">Success</span>', 'Just Now'));
-        tb.appendChild(createTableRow('ZKTeco Secondary Reader', '192.168.1.202', 'Log Fetch', '<span class="badge badge-success">Success</span>', '10 mins ago'));
-        tb.appendChild(createTableRow('Canteen Terminal',        '192.168.1.203', 'Ping',      '<span class="badge badge-danger">Offline</span>',  '1 hour ago'));
+        if (liveActivity.length === 0) {
+          tb.innerHTML = `
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 32px 0;">
+                No recent device activity recorded.
+              </td>
+            </tr>
+          `;
+        } else {
+          liveActivity.forEach(act => {
+            tb.appendChild(createTableRow(
+              act.deviceName,
+              act.ipAddress,
+              act.action,
+              act.status,
+              act.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+            ));
+          });
+        }
         t.appendChild(tb);
         return t;
       })()
@@ -227,6 +296,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     contentBody.appendChild(grid);
     contentBody.appendChild(tableWrap);
+
+    updateDashboardMetrics(grid);
   }
 
   function renderEmployees() {
@@ -361,6 +432,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       const activityTbody = document.getElementById('dashboard-activity-tbody');
       if (activityTbody) {
+        // Clear empty state message if it was showing
+        const emptyRow = activityTbody.querySelector('td[colspan="5"]');
+        if (emptyRow) {
+          activityTbody.innerHTML = '';
+        }
+
         const newRow = createTableRow(
           newAct.deviceName,
           newAct.ipAddress,
@@ -370,10 +447,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         );
         activityTbody.insertBefore(newRow, activityTbody.firstChild);
 
-        const valueElements = document.querySelectorAll('.metric-value');
-        if (valueElements && valueElements[1]) {
-          const current = parseInt(valueElements[1].textContent || '145', 10);
-          valueElements[1].textContent = String(current + 1);
+        const gridEl = document.querySelector('.metrics-grid') as HTMLElement;
+        if (gridEl) {
+          updateDashboardMetrics(gridEl);
         }
       }
 
