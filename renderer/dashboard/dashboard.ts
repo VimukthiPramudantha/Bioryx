@@ -2,6 +2,7 @@
 
 const livePunches: Array<{ userId: string; timestamp: Date; deviceIp: string; mongoSynced: boolean }> = [];
 const liveActivity: Array<{ deviceName: string; ipAddress: string; action: string; status: string; timestamp: Date }> = [];
+const syncLogs: Array<{ event: string; records: string; status: string; timestamp: Date }> = [];
 
 function createElement<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -325,6 +326,69 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   function renderSync() {
+    const btnForceSync = createElement('button', { className: 'btn-primary', style: 'margin-top:16px;' }, 'Force Sync Now');
+
+    btnForceSync.addEventListener('click', async () => {
+      btnForceSync.setAttribute('disabled', 'true');
+      btnForceSync.textContent = 'Syncing...';
+      const toast = (window as any).gooeyToast;
+      toast?.info('Synchronizing', { description: 'Running device and database sync...' });
+
+      try {
+        const api = (window as any).electronAPI;
+        if (api?.syncDeviceDatabase) {
+          const res = await api.syncDeviceDatabase();
+          const countInfo = res.count !== undefined ? `${res.count} records` : 'Completed';
+          syncLogs.unshift({
+            event: 'Manual Sync',
+            records: countInfo,
+            status: res.success ? '<span class="badge badge-success">Success</span>' : '<span class="badge badge-danger">Failed</span>',
+            timestamp: new Date()
+          });
+          toast?.success('Sync Finished', {
+            description: `Device: ${res.deviceStatus || 'Checked'}, DB: ${res.isDbConnected ? 'Connected' : 'Disconnected'}`
+          });
+        }
+      } catch (err: any) {
+        syncLogs.unshift({
+          event: 'Manual Sync',
+          records: '0 records',
+          status: '<span class="badge badge-danger">Error</span>',
+          timestamp: new Date()
+        });
+        toast?.error('Sync Error', { description: err.message || 'Failed to complete synchronization.' });
+      } finally {
+        btnForceSync.removeAttribute('disabled');
+        btnForceSync.textContent = 'Force Sync Now';
+        // Re-render table if in view
+        const tbody = document.getElementById('sync-logs-tbody');
+        if (tbody) {
+          renderSyncLogsTable(tbody);
+        }
+      }
+    });
+
+    function renderSyncLogsTable(tbody: HTMLElement) {
+      tbody.innerHTML = '';
+      if (syncLogs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="3" style="text-align: center; color: var(--text-secondary); padding: 32px 0;">
+              No synchronization events recorded.
+            </td>
+          </tr>
+        `;
+      } else {
+        syncLogs.forEach(log => {
+          tbody.appendChild(createTableRow(
+            log.event,
+            log.records,
+            log.status
+          ));
+        });
+      }
+    }
+
     const grid = createElement('div', { className: 'config-grid' },
       createElement('div', { className: 'config-card' },
         createElement('h3', {}, 'Synchronization Status'),
@@ -337,7 +401,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return s;
           })()
         ),
-        createElement('button', { className: 'btn-primary', style: 'margin-top:16px;' }, 'Force Sync Now')
+        btnForceSync
       ),
       createElement('div', { className: 'config-card' },
         createElement('h3', {}, 'Sync Service Logs'),
@@ -350,9 +414,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             )
           ));
           const tb = document.createElement('tbody');
-          tb.appendChild(createTableRow('Fetched Attendance', '45 logs',    '<span class="badge badge-success">Success</span>'));
-          tb.appendChild(createTableRow('Updated Employees',  '3 profiles', '<span class="badge badge-success">Success</span>'));
-          tb.appendChild(createTableRow('Connection Ping',    'Online',     '<span class="badge badge-success">Success</span>'));
+          tb.id = 'sync-logs-tbody';
+          renderSyncLogsTable(tb);
           t.appendChild(tb);
           return t;
         })()
@@ -474,6 +537,21 @@ document.addEventListener('DOMContentLoaded', async () => {
         toast?.success('Database Sync Complete', {
           description: data.message || `Successfully synchronized ${data.count} offline punch records to MongoDB Atlas.`
         });
+
+        syncLogs.unshift({
+          event: 'Database Sync',
+          records: data.count ? `${data.count} punches` : 'Synced',
+          status: '<span class="badge badge-success">Success</span>',
+          timestamp: new Date()
+        });
+
+        const syncTbody = document.getElementById('sync-logs-tbody');
+        if (syncTbody) {
+          syncTbody.innerHTML = '';
+          syncLogs.forEach(log => {
+            syncTbody.appendChild(createTableRow(log.event, log.records, log.status));
+          });
+        }
 
         refreshStatus();
 
