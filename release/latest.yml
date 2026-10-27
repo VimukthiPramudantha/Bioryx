@@ -1,8 +1,8 @@
 version: 1.0.0
 files:
   - url: Bioryx-Setup-1.0.0.exe
-    sha512: Q6NTCRNTtHOJTS7PRw1v1dUSjPVD7JgyKJwnIRi+h/2+ReIn8hqrpnHsp7glz1PMoBoantdVbJO4LEqhpwmylg==
-    size: 102769024
+    sha512: GSxJolMtGLD8CVfeVBXJx1IeaVpYt1JYQ3QfZXRo4BaVnJPP2OTFQcV6R+IKIA454qe9RRdLBk1fL9gcXhndiA==
+    size: 103742727
 path: Bioryx-Setup-1.0.0.exe
-sha512: Q6NTCRNTtHOJTS7PRw1v1dUSjPVD7JgyKJwnIRi+h/2+ReIn8hqrpnHsp7glz1PMoBoantdVbJO4LEqhpwmylg==
-releaseDate: '2026-06-19T07:06:56.360Z'
+sha512: GSxJolMtGLD8CVfeVBXJx1IeaVpYt1JYQ3QfZXRo4BaVnJPP2OTFQcV6R+IKIA454qe9RRdLBk1fL9gcXhndiA==
+releaseDate: '2026-10-27T04:43:12.990Z'

@@ -28,7 +28,9 @@
     },
     "files": [
       "dist/**/*",
-      "node_modules/**/*",
+      "renderer/**/*.html",
+      "renderer/**/*.css",
+      "assets/**/*",
       "package.json"
     ],
     "win": {
@@ -39,7 +41,8 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "shortcutName": "Bioryx"
     }
   },
   "devDependencies": {
